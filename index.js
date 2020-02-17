@@ -42,15 +42,19 @@ if (exist) {
                         return false
                     } else {
                         dataToJson.rows.map((value, index) => {
+                            // convert _id to objectId
+                            value._id = mongodb.ObjectId(value._id)
                             collection.insert(value, (error, result) => {
                                 if (error) {
                                     console.log(error)
                                     console.log(`error index is ${index}`)
-                                    return false
                                 }
                             })
+                            if (index + 1 === dataToJson.rows.length) {
+                                console.log('done. press control + c')
+                                return false
+                            }
                         })
-                        .then(() => console.log('paste end.'))
                     }
                 })
             }
