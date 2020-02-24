@@ -36,7 +36,18 @@ npm install
         }
     }
 
-### 4. npm run start
+### 4. data converting
+
+    //data converting(index.js 33:44)
+    const convertedData = dataToJson.rows.map((document, index) => {
+      return {
+        _id: document._id,
+        name: document.name,
+        birthday: document.birthday.replace(/-/g,'.'),
+      }
+    })
+
+### 5. npm run start
 `
 npm run start
 `

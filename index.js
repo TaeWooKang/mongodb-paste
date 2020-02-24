@@ -20,46 +20,66 @@ const copiedFile = `${__dirname}/${fileName}`
 const mongoClient = mongodb.MongoClient
 const exist = fs.existsSync(copiedFile)
 
+// file exist check
 if (exist) {
-    fs.readFile(copiedFile, (error, data) => {
-        if (error) {
+
+  //file read
+  fs.readFile(copiedFile, (error, data) => {
+    if (error) {
+      console.log(error)
+      return false
+    }
+    // data parsing
+    const dataToJson = JSON.parse(data.toString())
+
+    //data converting
+    const convertedData = dataToJson.rows.map((document, index) => {
+       return {
+         ...document
+        // ex)
+        // _id: document._id,
+        // name: document.name,
+        // birthday: document.birthday.replace(/-/g,'.'),
+        }
+      })
+      
+      //db client connect
+    mongoClient.connect(uri, (error, client) => {
+      if (error) {
+        console.log(error)
+        return false
+      }
+
+      //get target db
+      const db = client.db(dbName)
+      if (!db) {
+        console.log(`Can not found db dbName: ${dbName}`)
+      } else {
+        // get target collection
+        db.collection(collectionName, (error, collection) => {
+          if (error) {
             console.log(error)
             return false
-        }
-        const dataToJson = JSON.parse(data.toString())
-        mongoClient.connect(uri, (error, client) => {
-            if (error) {
-                console.log(error)
-                return false
-            }
-            const db = client.db(dbName)
-            if (!db) {
-                console.log(`Can not found db dbName: ${dbName}`)
-            } else {
-                db.collection(collectionName, (error, collection) => {
-                    if (error) {
-                        console.log(error)
-                        return false
-                    } else {
-                        dataToJson.rows.map((value, index) => {
-                            // convert _id to objectId
-                            value._id = mongodb.ObjectId(value._id)
-                            collection.insert(value, (error, result) => {
-                                if (error) {
-                                    console.log(error)
-                                    console.log(`error index is ${index}`)
-                                }
-                            })
-                            if (index + 1 === dataToJson.rows.length) {
-                                console.log('done. press control + c')
-                                return false
-                            }
-                        })
-                    }
+          } else {
+
+            // insert converted data to collection
+            convertedData.rows.map((value, index) => {
+              collection.insert(value, (error, result) => {
+                if (error) {
+                  console.log(error)
+                  console.log(`error index is ${index}`)
+                }
                 })
-            }
+                if (index + 1 === dataToJson.rows.length) {
+                  console.log('done. press control + c')
+                  return false
+                }
+            })
+          }
         })
+      }
     })
+  })
 } else {
     console.log(`${copiedFile} does not exsist`)
 }
