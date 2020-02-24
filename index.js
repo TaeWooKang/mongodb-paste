@@ -34,15 +34,11 @@ if (exist) {
 
     //data converting
     const convertedData = dataToJson.rows.map((document, index) => {
-       return {
-         ...document
-        // ex)
-        // _id: document._id,
-        // name: document.name,
-        // birthday: document.birthday.replace(/-/g,'.'),
+      return {
+        _id: mongodb.ObjectId(document._id),
+        name: document.name,
         }
       })
-      
       //db client connect
     mongoClient.connect(uri, (error, client) => {
       if (error) {
@@ -63,7 +59,7 @@ if (exist) {
           } else {
 
             // insert converted data to collection
-            convertedData.rows.map((value, index) => {
+            convertedData.map((value, index) => {
               collection.insert(value, (error, result) => {
                 if (error) {
                   console.log(error)
