@@ -10,7 +10,9 @@ const host = config.mongo.host
 const port = config.mongo.port
 const dbName = config.mongo.dbName
 const collectionName = config.mongo.collectionName
-const uri = `mongodb://${username}:${encodeURIComponent(password)}@${host}:${port}/${dbName}`;
+const uri = username && password ?
+`mongodb://${username}:${encodeURIComponent(password)}@${host}:${port}/${dbName}`
+: `mongodb://${host}:${port}/${dbName}`
 
 // fs config
 
@@ -20,18 +22,18 @@ const copiedFile = `${__dirname}/${fileName}`
 const mongoClient = mongodb.MongoClient
 const exist = fs.existsSync(copiedFile)
 
+if (!username || !password) {
+  console.log('no authentication process. (empty username or password )')
+}
 // file exist check
 if (exist) {
-
   //file read
   fs.readFile(copiedFile, (error, data) => {
     if (error) {
-      console.log(error)
       return false
     }
     // data parsing
     const dataToJson = JSON.parse(data.toString())
-
     //data converting
     const convertedData = dataToJson.rows.map((document, index) => {
       return {
@@ -57,6 +59,7 @@ if (exist) {
             console.log(error)
             return false
           } else {
+            // insert converted data to collection
             collection.insertMany(convertedData)
             .then(() => console.log('done, press on "ctrl + c"'))
             .catch((error) => {throw error})
