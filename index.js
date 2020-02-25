@@ -57,20 +57,9 @@ if (exist) {
             console.log(error)
             return false
           } else {
-
-            // insert converted data to collection
-            convertedData.map((value, index) => {
-              collection.insert(value, (error, result) => {
-                if (error) {
-                  console.log(error)
-                  console.log(`error index is ${index}`)
-                }
-                })
-                if (index + 1 === dataToJson.rows.length) {
-                  console.log('done. press control + c')
-                  return false
-                }
-            })
+            collection.insertMany(convertedData)
+            .then(() => console.log('done, press on "ctrl + c"'))
+            .catch((error) => {throw error})
           }
         })
       }
